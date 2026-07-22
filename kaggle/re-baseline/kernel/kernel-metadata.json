@@ -1,0 +1,14 @@
+{
+  "id": "salah1992/kgeval-2026-re-baseline",
+  "title": "KGEval 2026 RE baseline",
+  "code_file": "re_baseline.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "machine_shape": "NvidiaTeslaT4",
+  "enable_internet": true,
+  "dataset_sources": ["salah1992/kgeval2026-bundle"],
+  "competition_sources": [],
+  "kernel_sources": []
+}

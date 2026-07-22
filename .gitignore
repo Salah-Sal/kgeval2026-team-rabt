@@ -1,0 +1,18 @@
+# licensed task data — never committed
+data/
+*.zip
+*.jsonl
+
+# python
+__pycache__/
+.pytest_cache/
+.venv/
+
+# kaggle credentials
+kaggle.json
+
+# macOS
+.DS_Store
+
+# kernel outputs and assembled submissions
+output/

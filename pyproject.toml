@@ -1,0 +1,35 @@
+[project]
+name = "kgeval"
+version = "0.1.0"
+description = "Team Rabt tooling for KnowledgeGraphEval 2026 (AdaptNER + Relation Extraction)"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "kaggle>=1.6",
+]
+# GPU/training stack is only needed on Kaggle (preinstalled there) or for local
+# smoke tests: `uv sync --group train`. Kept out of the default sync on purpose.
+train = [
+    # >=2.4 for the torch.amp.GradScaler/autocast device-string API
+    "torch>=2.4",
+    "transformers>=4.44",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kgeval"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.uv]
+environments = [
+    "sys_platform == 'darwin'",
+    "sys_platform == 'linux'",
+]
