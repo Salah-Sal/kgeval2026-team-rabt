@@ -35,6 +35,10 @@ class TrainConfig:
     patience: int = 5
     seed: int = 13
     head: str = "multi"  # "multi" (A10 unified loss) | "sigmoid" (B22, use lr 6e-5)
+    # "best": keep the best-val-F1 checkpoint, early-stop on patience.
+    # "last": fixed-epoch schedule — train to max_epochs, keep final weights;
+    # val is monitoring only (train+val-combined runs have no held-out val).
+    select: str = "best"
     clip_grad_norm: float | None = 1.0
     wall_limit_s: float | None = None
     loss_lambdas: tuple[float, float, float, float] = (0.4, 0.2, 0.2, 0.2)
@@ -89,6 +93,8 @@ def run_training(
     tokenizer=None,
     log=print,
 ) -> tuple[torch.nn.Module, object, dict]:
+    if cfg.select not in ("best", "last"):
+        raise ValueError(f"unknown select {cfg.select!r}")
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     set_seed(cfg.seed)
@@ -184,23 +190,31 @@ def run_training(
 
         if f1 > best_f1:
             best_f1, best_epoch, bad_epochs = f1, epoch, 0
-            torch.save(model.state_dict(), best_path)
+            if cfg.select == "best":
+                torch.save(model.state_dict(), best_path)
         else:
             bad_epochs += 1
-            if bad_epochs >= cfg.patience:
+            if cfg.select == "best" and bad_epochs >= cfg.patience:
                 stopped = "early_stopping"
                 break
         if cfg.wall_limit_s is not None and time.time() - t0 > cfg.wall_limit_s:
             stopped = "wall_limit"
             break
 
-    model.load_state_dict(torch.load(best_path, map_location=device, weights_only=True))
+    if cfg.select == "last":
+        # final weights under the checkpoint's usual name; no reload needed
+        torch.save(model.state_dict(), best_path)
+    else:
+        model.load_state_dict(
+            torch.load(best_path, map_location=device, weights_only=True)
+        )
     result = {
         "config": asdict(cfg),
         "device": device,
         "history": history,
         "best_epoch": best_epoch,
         "best_val_f1": best_f1,
+        "final_epoch": history[-1]["epoch"] if history else -1,
         "stopped": stopped,
         "total_seconds": round(time.time() - t0, 1),
     }

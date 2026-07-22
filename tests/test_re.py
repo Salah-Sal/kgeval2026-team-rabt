@@ -72,3 +72,34 @@ def test_grouped_split_never_splits_a_sentence():
     val_groups = {r["sentence_id"] for r in val}
     assert not (train_groups & val_groups)
     assert info["n_train"] + info["n_val"] == 100
+
+
+def test_grouped_kfold_partitions_and_balances():
+    from kgeval.splits import grouped_kfold
+
+    # uneven group sizes: sentence s0 has 6 triples, others 1-3
+    records = []
+    sizes = {"s0": 6, "s1": 3, "s2": 3, "s3": 2, "s4": 2, "s5": 1, "s6": 1,
+             "s7": 1, "s8": 1, "s9": 1}
+    tid = 0
+    for sid, n in sizes.items():
+        for _ in range(n):
+            records.append({"triple_id": str(tid), "sentence_id": sid})
+            tid += 1
+    folds = grouped_kfold(records, k=3, seed=7)
+    assert len(folds) == 3
+    all_val_ids = []
+    for train, val in folds:
+        train_groups = {r["sentence_id"] for r in train}
+        val_groups = {r["sentence_id"] for r in val}
+        assert not (train_groups & val_groups)  # group never split
+        assert len(train) + len(val) == len(records)
+        all_val_ids.extend(r["triple_id"] for r in val)
+    # val sides partition the record set exactly
+    assert sorted(all_val_ids) == sorted(r["triple_id"] for r in records)
+    val_sizes = [len(val) for _, val in folds]
+    assert max(val_sizes) - min(val_sizes) <= 6  # bounded by the largest group
+    # deterministic
+    folds2 = grouped_kfold(records, k=3, seed=7)
+    assert [[r["triple_id"] for r in v] for _, v in folds] == \
+           [[r["triple_id"] for r in v] for _, v in folds2]

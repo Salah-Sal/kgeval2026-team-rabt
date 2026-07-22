@@ -114,6 +114,29 @@ def test_run_training_and_evaluate(tiny_tokenizer, tiny_encoder, tmp_path):
     assert 0.0 <= f1 <= 1.0
 
 
+def test_run_training_select_last_keeps_final_weights(
+    tiny_tokenizer, tiny_encoder, tmp_path
+):
+    import copy
+
+    cfg = TrainConfig(max_epochs=3, patience=1, batch_size=3, max_len=32, seed=7,
+                      select="last")
+    model, _tok, result = run_training(
+        DOCS, DOCS[:2], cfg, tmp_path,
+        encoder=copy.deepcopy(tiny_encoder), tokenizer=tiny_tokenizer,
+        log=lambda *_: None,
+    )
+    # patience=1 must NOT early-stop a select="last" run
+    assert len(result["history"]) == 3
+    assert result["stopped"] == "max_epochs"
+    assert result["final_epoch"] == 2
+    assert result["config"]["select"] == "last"
+    # the saved checkpoint holds the in-memory final weights, not a reload of best
+    saved = torch.load(tmp_path / "best_model.pt", weights_only=True)
+    live = model.state_dict()
+    assert all(torch.equal(saved[k], live[k].cpu()) for k in saved)
+
+
 def test_multihead_tagger_shapes(tiny_encoder):
     model = MultiHeadTagger(tiny_encoder)
     ids = torch.randint(5, len(VOCAB), (2, 11))
