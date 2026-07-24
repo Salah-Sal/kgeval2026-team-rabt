@@ -16,3 +16,6 @@ kaggle.json
 
 # kernel outputs and assembled submissions
 output/
+
+# built paper (regenerate with paper/build.sh)
+paper/*.pdf

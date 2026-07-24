@@ -8,17 +8,20 @@ Team: Salah Abdo, Faisal Muhammad Adam.
 **Subtask 1 — AdaptNER** (nested Arabic NER under domain shift: train on
 Wojood, blind-test on Konooz, 21 entity types). AraBERTv02 encoder with 21
 per-type BIO heads, trained with a unified loss (CE + Dice + Tversky + Focal,
-variance-penalized across heads). Span decoding matches the official
-evaluator's lenient seqeval semantics. Current: **0.9240 micro-F1 on the
-Wojood test set** (published ArabicNER baseline: 88.4).
+variance-penalized across heads); exact-match IOB2 span decoding with
+orphan-I repair (local scorer reconciled against submission rehearsals;
+official Codabench numbers are authoritative). Official blind test:
+**0.7483 micro-F1** (3-seed majority-vote ensemble; single model 0.7385).
+In-domain Wojood test: 0.9329 ensemble / 0.9240 single (published
+ArabicNER baseline: 88.4).
 
 **Subtask 2 — Relation Extraction** (41-way relation classification over
 given entity pairs, WojoodRelations). Typed punctuation markers
 (Zhou & Chen) inserted around subject/object with entity types recovered via
 sentence-id join against gold Wojood, a FFNN over the start-marker states,
-and soft domain/range constraints (logit penalty 3.0) at inference.
-Current: **0.9470 micro-F1 on our held-out dev split** (constraints add
-~1 point micro, ~5 points macro).
+and soft domain/range constraints (logit penalty 3.0) at inference,
+ensembled over 5 grouped folds by logit averaging. Official blind test:
+**0.9571 micro-F1** (single model 0.9519); pooled out-of-fold 0.95995.
 
 ## Layout
 
@@ -30,6 +33,7 @@ kaggle/         kernel drivers used to run training/inference on Kaggle T4s;
                 each directory has a README with push/monitor/fetch commands
 scripts/        local submission assembly (merges Kaggle tag exports with the
                 released test files)
+paper/          system-description paper, ACL LaTeX (see paper/README.md)
 ```
 
 ## Setup
