@@ -34,6 +34,11 @@ kaggle/         kernel drivers used to run training/inference on Kaggle T4s;
 scripts/        local submission assembly (merges Kaggle tag exports with the
                 released test files)
 paper/          system-description paper, ACL LaTeX (see paper/README.md)
+notebooks/      pedagogical Colab companions (one per subtask) — self-contained
+                walkthroughs of both systems on a synthetic Arabic toy corpus,
+                with a FULL_REPLICATION flag restoring the paper's configs
+companions/     reading material: the paper companion PDF (light + dark) and
+                the companion slide deck (pptx)
 ```
 
 ## Setup
