@@ -1,0 +1,14 @@
+{
+  "id": "salah1992/kgeval-2026-adaptner-ablation",
+  "title": "KGEval 2026 AdaptNER ablation",
+  "code_file": "adaptner_ablation.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "machine_shape": "NvidiaTeslaT4",
+  "enable_internet": true,
+  "dataset_sources": ["salah1992/kgeval2026-bundle"],
+  "competition_sources": [],
+  "kernel_sources": []
+}
