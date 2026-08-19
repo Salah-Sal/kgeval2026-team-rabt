@@ -3,11 +3,12 @@
 % official results tables and all pre-Aug-5 correspondence still say Rabt.
 % Master document (supersedes ../draft.md). Build: ./build.sh (tectonic).
 % Mode: organizers confirmed 2026-08-05 that system papers are NOT anonymous,
-%       so [review] is ruled out permanently. [preprint] adds page numbers,
-%       which the guidelines email lists among the formatting deviations that
-%       can get a paper rejected unreviewed — build [final] for submission.
+%       so [review] is ruled out permanently. [final] is the required
+%       submission mode ([preprint] adds page numbers, which the guidelines
+%       email lists among deviations that can get a paper rejected
+%       unreviewed); flipped from [preprint] 2026-08-16.
 \documentclass[11pt]{article}
-\usepackage[preprint]{acl}
+\usepackage[final]{acl}
 \usepackage{times}
 \usepackage{latexsym}
 \usepackage[T1]{fontenc}
@@ -69,7 +70,7 @@ on relation extraction: 4th and 2nd among the eight officially ranked
 teams, 11.8 and 2.6 points above the official baselines. We analyze where
 the 18.6-point domain-shift tax on NER falls: chiefly on recall. We
 further show that type-constraint decoding and ensembling are partially
-redundant: the constraint penalty is worth +1.3 points on a single RE
+redundant: the constraint penalty is worth +0.9 points on a single RE
 model but only +0.1 on the ensemble, and the surviving errors share an
 argument-type signature, which no type constraint can separate.
 \end{abstract}
@@ -97,7 +98,7 @@ type) at inference; (3)~ensembling matched to each task's variance source,
 random seeds with span-level voting for NER and grouped 5-fold logit
 averaging for RE; and (4)~a leakage-free protocol, under which Konooz never
 touches training, validation, or model selection and every choice is made
-on Wojood-internal splits. Each system trains on a single free-tier GPU in
+on Wojood-internal splits. Each model trains on a single free-tier GPU in
 ${\sim}90$\,minutes or less.
 
 \section{Related Work}
@@ -118,8 +119,8 @@ adopt the multi-head per-type BIO
 formulation with the unified imbalance-aware loss of
 \citet{mahdaouy-etal-2023-um6p}, typed punctuation entity markers for
 relation classification \citep{zhou-chen-2022-improved}, and AraBERTv02
-\citep{antoun-etal-2020-arabert}, the strongest MSA encoder in our
-literature survey.
+\citep{antoun-etal-2020-arabert}, the consensus strongest MSA encoder in
+our literature survey.
 
 \section{Task and Data}
 
@@ -134,9 +135,8 @@ manual annotation of the test set.
 \paragraph{Subtask 2: Relation Extraction.} WojoodRelations provides
 sentences with a marked subject and object mention; the system outputs
 exactly one of 40 positive relation types per instance. The test set
-contains no negative pairs, so abstention is not part of the task and
-micro-F1 equals precision, recall, and accuracy; we report micro-F1
-alone. The distributed training material contains 17,381 labeled records;
+contains no negative pairs, so micro-F1 equals precision, recall, and
+accuracy; we report micro-F1 alone. The distributed training material contains 17,381 labeled records;
 the blind test set has 4,386 pairs.
 
 \paragraph{Rules compliance.} We trained both systems exclusively on
@@ -183,13 +183,15 @@ object as
 so the argument types enter as plain text with no new vocabulary; a
 two-layer feed-forward head over the concatenated start-marker states
 classifies into 41 classes (40 relations +
-\texttt{no\_relation}). We train the full 41-way problem and set the
+\texttt{no\_relation}). We train on the full 41-way problem and set the
 \texttt{no\_relation} logit to $-\infty$ at decoding, since the test set
 is forced-choice positive.
 
 \paragraph{Argument typing at test time.} The blind test provides
 mentions but not the entity types the markers and constraints need. We
-join each record's sentence id against Wojood's gold sentences and match
+join each record's sentence id against Wojood's gold sentences
+(distributed task data; entity annotations only, never relation labels)
+and match
 the mention string to that sentence's gold entity surfaces, falling back
 to a corpus-wide mention$\rightarrow$type lexicon and finally to UNK,
 which degrades that instance to untyped markers with constraints disabled
@@ -216,7 +218,7 @@ saw it) re-validate the penalty choice on all 17,381 records.
 
 All experiments ran on a single NVIDIA T4 (free Kaggle tier) with
 deterministic seeds; no reported system cost more than
-${\approx}4$ GPU-hours. Appendix~\ref{app:hyper} lists the
+${\approx}4$ GPU-hours in aggregate. Appendix~\ref{app:hyper} lists the
 hyperparameters; code is available at
 \url{https://github.com/Salah-Sal/kgeval2026-team-rabt}.
 
@@ -228,9 +230,9 @@ single grouped held-out split (15,207 train / 2,174 dev), replaced for
 the final system by grouped 5-fold cross-validation, re-validating
 the constraint-penalty choice on pooled out-of-fold predictions.
 
-We used two of the ten submission slots per track;
-Table~\ref{tab:manifest} lists the four officially scored submissions (v1
-single models, Jul 22; v2 ensembles, Jul 24).
+We used two of the ten submission slots per track
+(Table~\ref{tab:manifest}: v1 single models, Jul 22; v2 ensembles,
+Jul 24).
 
 \section{Results}
 
@@ -257,7 +259,7 @@ so micro-F1 ${=}$ P ${=}$ R.}
 
 Among the eight officially ranked teams we finished \textbf{4th} on
 AdaptNER, where the top four sit within 0.01 micro-F1, and \textbf{2nd}
-on Relation Extraction (0.9571, behind 0.9603). Both systems beat the
+on relation extraction (0.9571, behind 0.9603). Both systems beat the
 official baselines: +0.12 micro / +0.19 macro on AdaptNER over the
 no-adaptation AraBERTv02 baseline (0.63 / 0.44), and +0.026 on RE over
 the organizers' baseline retrained on the released split (0.9309), a
@@ -282,17 +284,16 @@ the single model.
 
 \paragraph{The domain-shift tax falls on recall.} The single model drops
 18.6 points from in-domain Wojood test (0.9240) to blind Konooz (0.7385),
-with a blind P$-$R gap of 9.2 points, though in domain recall was
-\emph{higher} than precision. Domain shift primarily
-costs recall: entities in unseen domains are missed, not mislabeled.
-Three anchors put 0.7385 in context:
-10.9 points above the official no-adaptation baseline; equal to the
+and the drop falls chiefly on recall ($-23.6$ points, vs.\ $-13.0$
+precision), reversing the in-domain P--R profile
+(Table~\ref{tab:nerdev}). Three anchors put 0.7385 in context:
+10.9 points above the official no-adaptation baseline; just above the
 winning score of WojoodNER-2024's out-of-domain Open Track (73.7)
 \citep{jarrar-etal-2024-wojoodner}; at the top of the 12--20-point
 degradation band Konooz itself measures \citep{hamad-etal-2025-konooz}.
 
 \paragraph{Constraint decoding and ensembling are partially redundant.}
-The type-constraint penalty is worth +1.26 points on the single model but
+The type-constraint penalty is worth +0.92 points on the single model but
 only +0.08 pooled-OOF on top of the 5-fold ensemble
 (Table~\ref{tab:redev}): most type-inadmissible errors are single-model
 flukes that logit averaging already removes. The penalty's remaining
@@ -308,27 +309,29 @@ fold model of the submitted ensemble on its held-out fold (3,476
 records), leaving 74 misclassified positives, and their structure
 explains why the constraint penalty saturates: the residual confusions
 hold between relations with the \emph{same} argument-type signature,
-which no type constraint can separate by construction. The two largest clusters
-are PERS--GPE \texttt{lives\_in} vs.\ \texttt{president\_of} (11 cases,
+which no type constraint can separate by construction. Two of the largest
+clusters are PERS--GPE \texttt{lives\_in} vs.\ \texttt{president\_of} (11 cases,
 in both directions) and GPE--GPE \texttt{capital\_of} vs.\
 \texttt{geopolitical\_division} (7). Two patterns recur. First, a pull
 toward the type pair's majority relation even against an explicit
 lexical cue: in \arx{برنامج القدس الفلسطينية عاصمتنا} (``the program
 `Palestinian Jerusalem, Our Capital'\,''), gold \texttt{capital\_of} is
 predicted as \texttt{geopolitical\_division}, which outnumbers it
-59-to-1 in training. Second, genuine overlap between readings: for
+59-to-1 among training records (1,721 vs.\ 29). Second, genuine overlap
+between readings: for
 \arx{رئيسة وزراء بريطانيا العظمى، مارغريت تاتشر} (``the Prime Minister
 of Great Britain, Margaret Thatcher''), the model outputs
-\texttt{president\_of}, the relation the surface text asserts, while
-gold encodes \texttt{lives\_in}; the reverse confusion is nearly as
-frequent, suggesting the pair is not fully separable in annotation
-practice either. On the blind test the penalty flips only 6 of 4,386
-ensemble predictions, all on pairs where types are decisive, e.g.\
-(\arx{فلسطين}, \arx{العربية}) from \texttt{geopolitical\_division} to
-\texttt{official\_language} for a (GPE, LANGUAGE) pair.
+\texttt{president\_of}, the closest leadership relation the inventory
+offers, while
+gold encodes \texttt{lives\_in}; the confusion runs both ways (6 vs.\ 5
+cases), unlike the one-way majority pull
+above. On the blind test the penalty flips only 6 of 4,386
+ensemble predictions, all on pairs where types are decisive.
 
 \paragraph{NER: metonymy, attachment, and register.} On Wojood test
-(0.9240), exact-boundary type confusions number only 138, and 60\% of
+(0.9240), errors partition into four mutually exclusive categories
+(Appendix~\ref{app:stats}). Exact-boundary type
+confusions number only 138, and 60\% of
 them are ORG$\leftrightarrow$GPE metonymy: in \arx{أنتجت بولندا بنشاط
 البنادق الهجومية} (``Poland actively produced assault rifles''),
 \arx{بولندا} is gold-annotated ORG as a state actor but predicted GPE,
@@ -346,16 +349,16 @@ by distance from the training register: spans predicted by a single seed
 account for 13--15\% of all predicted spans in Finance and Economics,
 the registers closest to Wojood's news-heavy composition, but 28\% in
 Science and Sport; Health yields the fewest predictions of any domain
-(228, Table~\ref{tab:domains}), a signal for where adaptation effort
-should go.
+(228, Table~\ref{tab:domains}).
 
 \subsection{Post-submission loss ablation}
 
 After the submission close we ablated the unified loss
 (Appendix~\ref{app:ablation}; no ablation run touched Konooz or any
-scored submission). The result is negative: plain cross-entropy matches
-the submitted recipe in domain (0.9267 / 0.8489 micro / macro on Wojood
-test vs.\ 0.9240 / 0.8462), and partial mixtures collapse rare types.
+scored submission). The result is negative: plain cross-entropy slightly
+outperforms the submitted recipe in domain (0.9267 / 0.8489 micro /
+macro on Wojood test vs.\ 0.9240 / 0.8462, single-seed runs), and
+partial mixtures collapse rare types.
 The variance penalty functions as a guard against the instability the
 other loss terms introduce (+12.4 macro over the penalty-free mixture),
 not as a lever over CE.
@@ -367,7 +370,7 @@ nested NER under domain shift and 2nd of 8 on relation extraction: one
 Arabic encoder, two task-shaped heads, ensembling placed where each
 task's variance lives, and a leakage-free protocol. The clearest
 finding is negative space: the domain-shift tax falls on
-recall and is systematic across seeds, so closing it requires
+recall and is shared across seeds, so closing it requires
 target-domain adaptation, not better combination of Wojood-only
 models (design alternatives: Appendix~\ref{app:design}).
 
@@ -412,7 +415,7 @@ compute.
 Encoder & arabertv02 & arabertv02 \\
 Batch / max length & 16 / 512 & 32 / 256 \\
 Learning rate & 1e-5, $\gamma{=}0.95$ & 2e-5 \\
-Weight decay & 1e-3 & 0.01 \\
+Weight decay & 1e-3 & 1e-2 \\
 Epochs & ${\leq}40$, pat.~5$^{a}$ & ${\leq}10$, pat.~2 \\
 Dropout / grad clip & 0.1 / 1.0 & 0.1 / 1.0 \\
 Seeds & 13$^{b}$ & 13$^{c}$ \\
@@ -458,7 +461,7 @@ since the validation split is folded into training.}
 \toprule
 \textbf{Config} & \textbf{Eval} & \textbf{F1} & \textbf{mF1} \\
 \midrule
-Single, no constraints & held-out & 0.9344 & 0.649 \\
+Single, no constraints & held-out & 0.9378 & 0.656 \\
 \ + penalty 3.0 & held-out & 0.9470 & 0.705 \\
 5-fold ens., no constr. & pooled OOF & 0.9592 & 0.638 \\
 \ + penalty 3.0 & pooled OOF & 0.95995 & 0.648 \\
@@ -487,14 +490,21 @@ Per-fold best validation micro-F1 spans 0.9518--0.9670 (mean 0.9590).}
   vs.\ the single model, concentrated in the
   \texttt{located\_in}/\texttt{subsidiary} and
   \texttt{president\_of}/\texttt{lives\_in} confusion clusters, the
-  same affiliation/location clusters that dominate dev confusion matrices.
+  same affiliation/location clusters that dominate development-set
+  confusion matrices.
   34/40 relation types appear in the ensemble output;
-  \texttt{Location.located\_in} alone accounts for 46\%.
+  \texttt{located\_in} alone accounts for 46\%.
 \item RE test-time typing: the sentence-id join located the source
   sentence for 4,360/4,386 records (99.4\%); with the lexicon fallback,
   4,290 subjects (97.8\%) and 4,295 objects (97.9\%) received a type; the
   remaining 96 subjects and 91 objects were typed as unknown, disabling
   their constraints rather than guessing.
+\item NER error taxonomy (\S\ref{sec:errors}): each errant gold span is
+  paired with at most one errant predicted span, by precedence: exact
+  boundaries with a different type (confusion), then same type with
+  overlapping boundaries (boundary). Unpaired gold spans count as
+  misses, unpaired predicted spans as spurious, so the four categories
+  are mutually exclusive by construction.
 \end{itemize}
 
 \section{Submission Manifest}
@@ -531,12 +541,13 @@ ledger.}
 \textbf{Penalty} & 0 & 1 & 2 & 3 & 4 \\
 \midrule
 micro-F1 & .95920 & .95952 & .95984 & .95995 & .96006 \\
-macro-F1 & .638 & --- & --- & \textbf{.648} & --- \\
+macro-F1 & .638 & .645 & .646 & \textbf{.648} & .647 \\
 \bottomrule
 \end{tabular}
 \caption{Pooled out-of-fold penalty sweep for the 5-fold RE ensemble (all
-17,381 records, positives only). Micro-F1 is monotone and nearly flat;
-penalty 3.0 maximizes macro-F1 and is used for all submissions.}
+17,381 records, positives only). Micro-F1 is monotone and nearly flat,
+peaking at 4; penalty 3.0 maximizes macro-F1 and is used for all
+submissions.}
 \label{tab:sweep}
 \end{table}
 
@@ -572,7 +583,8 @@ blind Konooz test slice, per domain (no gold available pre-deadline).}
 \section{Design Alternatives Considered}
 \label{app:design}
 
-The design phase rejected, on published evidence rather than taste: LLM
+The design phase rejected the following on published evidence rather
+than taste: LLM
 in-context NER (published Arabic results of 0.29--0.74 F1), MRC-style
 per-type querying ($21{\times}$ inference cost), grid decoders whose
 extra expressiveness the submission format cannot carry, LLM-only RE
@@ -596,8 +608,8 @@ baseline configuration (Wojood-only, seed 13); no ablation run touched
 Konooz, the leaderboard, or any submitted system. Adding Dice to CE
 collapses PRODUCT to 0 F1; the full mixture without the variance penalty
 additionally zeroes UNIT and QUANTITY; the variance penalty rescues all
-three. Whether the E1/E5 tie holds under domain shift is untestable
-without Konooz gold.
+three. Whether E1's slight in-domain edge holds under domain shift is
+untestable without Konooz gold.
 
 \begin{table}[H]
 \centering
@@ -611,10 +623,10 @@ E1 & CE only & .9227 / .8334 & .9267 / .8489 \\
 E2 & +Dice & .9233 / .7777 & .9258 / .7674 \\
 E3 & +Tversky & .9224 / .7780 & .9263 / .7863 \\
 E4 & +Focal (full mix) & .9202 / .7201 & .9240 / .7226 \\
-E5 & full + var.~pen.$^{\dagger}$ & .9208 / .8324 & .9240 / .8461 \\
+E5 & full + var.~pen.$^{\dagger}$ & .9208 / .8324 & .9240 / .8462 \\
 \bottomrule
 \end{tabular}
-\caption{Post-submission loss ablation (run Aug 3, after the July 29
+\caption{Post-submission loss ablation (run August 3, after the July 29
 close; never part of a scored submission). Wojood val/test span
 micro-F1~/~macro-F1, seed 13, baseline configuration. Mixture weights
 over (CE, Dice, Tversky, Focal): E2 (.5,.5,0,0), E3 (.4,.3,.3,0),

@@ -29,10 +29,10 @@ ensembled over 5 grouped folds by logit averaging. Official blind test:
 model 0.9519); pooled out-of-fold 0.95995.
 
 A post-submission loss ablation (`kaggle/adaptner-ablation*/`) found that
-plain cross-entropy matches the submitted unified-loss recipe in domain
-and that the variance penalty acts as a guard against rare-type collapse
-rather than a lever over CE; the paper reports this negative result in
-full.
+plain cross-entropy slightly outperforms the submitted unified-loss
+recipe in domain (single-seed runs) and that the variance penalty acts
+as a guard against rare-type collapse rather than a lever over CE; the
+paper reports this negative result in full.
 
 ## Layout
 
