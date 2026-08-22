@@ -1,5 +1,9 @@
 # Team Wasl: KnowledgeGraphEval 2026 (ArabicNLP 2026)
 
+Code companion to our system description paper (submitted 2026-08-22,
+under review for the ArabicNLP 2026 proceedings; Anthology link to
+follow). Cite via `CITATION.cff`.
+
 System code for both subtasks of the KnowledgeGraphEval 2026 shared task.
 Team: Salah Abdo, Faisal Muhammad Adam. We competed as Team Rabt and were
 renamed to Wasl (وَصْل, joining) on 2026-08-05 at the organizers' request,

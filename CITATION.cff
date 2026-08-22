@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the system description paper below."
+title: "Wasl at KnowledgeGraphEval 2026: system code"
+authors:
+  - family-names: Abdo
+    given-names: Salah
+  - family-names: Adam
+    given-names: Faisal Muhammad
+    orcid: "https://orcid.org/0009-0004-7521-0827"
+year: 2026
+repository-code: "https://github.com/Salah-Sal/kgeval2026-team-rabt"
+license: MIT
+preferred-citation:
+  type: conference-paper
+  title: "Wasl at KnowledgeGraphEval 2026: Multi-Head Nested BIO Tagging and Constraint-Aware Relation Classification for Arabic Knowledge Graph Construction"
+  authors:
+    - family-names: Abdo
+      given-names: Salah
+    - family-names: Adam
+      given-names: Faisal Muhammad
+      orcid: "https://orcid.org/0009-0004-7521-0827"
+  collection-title: "Proceedings of the Fourth Arabic Natural Language Processing Conference: Shared Tasks"
+  year: 2026
+  notes: "Under review; citation will be updated with the ACL Anthology entry on publication."
