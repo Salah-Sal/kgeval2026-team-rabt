@@ -1,8 +1,8 @@
 # Team Wasl: KnowledgeGraphEval 2026 (ArabicNLP 2026)
 
-Code companion to our system description paper (submitted 2026-08-22,
-under review for the ArabicNLP 2026 proceedings; Anthology link to
-follow). Cite via `CITATION.cff`.
+Code companion to our system description paper (accepted for the
+ArabicNLP 2026 proceedings as a poster, 2026-09-06; camera-ready
+submitted 2026-09-09; Anthology link to follow). Cite via `CITATION.cff`.
 
 System code for both subtasks of the KnowledgeGraphEval 2026 shared task.
 Team: Salah Abdo, Faisal Muhammad Adam. We competed as Team Rabt and were
@@ -29,8 +29,16 @@ given entity pairs, WojoodRelations). Typed punctuation markers
 sentence-id join against gold Wojood, a FFNN over the start-marker states,
 and soft domain/range constraints (logit penalty 3.0) at inference,
 ensembled over 5 grouped folds by logit averaging. Official blind test:
-**0.9571 micro-F1, 2nd of the eight officially ranked teams** (single
-model 0.9519); pooled out-of-fold 0.95995.
+**0.9571 micro-F1, 2nd of the eight officially ranked teams at the results
+release** (single model 0.9519); pooled out-of-fold 0.95995. The submitted
+file masked the no_relation logit at decoding because the task page stated
+the val/test splits contain no no-relation instances. After the release the
+organizers asked every team to resubmit over the full 41-class space, and
+the same ensemble decoded without the mask (337 of 4,386 predictions change
+to no_relation) was re-scored **0.9328 micro-F1 (P 0.9716, R 0.8969), 4th
+of the seven ranked teams in the organizers' final table** (above the
+retrained baseline, 0.9309). The paper reports both figures. Reproduce the
+41-class decode with `scripts/decode_re_ensemble.py --allow-no-relation`.
 
 A post-submission loss ablation (`kaggle/adaptner-ablation*/`) found that
 plain cross-entropy slightly outperforms the submitted unified-loss
@@ -77,5 +85,6 @@ Wojood train+dev.
 
 ## Status
 
-Private until the system-description paper is submitted; it then goes
-public as the paper's code companion.
+Public as the paper's code companion; the camera-ready was submitted on
+2026-09-09 and the repo goes public alongside it. The Anthology DOI is
+added to `CITATION.cff` when available.

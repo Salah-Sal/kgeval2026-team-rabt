@@ -8,6 +8,10 @@ validated against the local test.jsonl.
 
   uv run python scripts/decode_re_ensemble.py              # kernel's penalty
   uv run python scripts/decode_re_ensemble.py --penalty 2  # alternative decode
+  uv run python scripts/decode_re_ensemble.py --allow-no-relation
+      # full 41-class decode (no_relation logit not masked), as the organizers
+      # requested on 2026-09-04; writes re_wasl_41class_<tag>.zip and reports
+      # how many predictions differ from the masked decode
 """
 
 from __future__ import annotations
@@ -33,6 +37,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--penalty", type=float, default=None,
                     help="constraint penalty (default: the kernel's)")
+    ap.add_argument("--allow-no-relation", action="store_true",
+                    help="do not mask the no_relation logit (41-class decode)")
     args = ap.parse_args()
 
     export = json.loads((ENS_OUT / "re_ens_logits.json").read_text())
@@ -46,14 +52,17 @@ def main() -> int:
     penalty = export["constraint_penalty_used"] if args.penalty is None else args.penalty
     inadmissible = export["inadmissible_by_pair"]
 
-    labels = []
+    labels, masked_labels = [], []
     for logits, (s, o) in zip(export["logits"], export["type_pairs"]):
         row = list(logits)
         if penalty:
             for i in inadmissible[f"{s}|{o}"]:
                 row[i] -= penalty
+        unmasked = vocab[max(range(len(vocab)), key=row.__getitem__)]
         row[masked_id] = float("-inf")
-        labels.append(vocab[max(range(len(vocab)), key=row.__getitem__)])
+        masked = vocab[max(range(len(vocab)), key=row.__getitem__)]
+        masked_labels.append(masked)
+        labels.append(unmasked if args.allow_no_relation else masked)
 
     test_records = load_jsonl(TEST_JSONL)
     ids = [str(r["triple_id"]) for r in test_records]
@@ -62,20 +71,35 @@ def main() -> int:
         return 1
 
     tag = f"p{penalty:g}".replace(".", "_")
-    out_zip = SUB_DIR / f"re_teamrabt_v2_{tag}.zip"
-    write_predictions(test_records, labels, out_zip, label_whitelist=set(vocab))
-    report = validate_predictions(out_zip, test_records, label_whitelist=set(vocab))
+    stem = "re_wasl_41class" if args.allow_no_relation else "re_teamrabt_v2"
+    out_zip = SUB_DIR / f"{stem}_{tag}.zip"
+    write_predictions(test_records, labels, out_zip, label_whitelist=set(vocab),
+                      allow_no_relation=args.allow_no_relation)
+    report = validate_predictions(out_zip, test_records, label_whitelist=set(vocab),
+                                  allow_no_relation=args.allow_no_relation)
     print("[validate]\n" + report.pretty())
     if not report.ok:
         return 1
 
     if penalty == export["constraint_penalty_used"]:
+        # The masked decode must always reproduce the kernel's histogram, which
+        # ties the 41-class file to the very same logits the official
+        # submission came from.
         kernel_hist = sentinel["label_histogram"]
-        local_hist = dict(Counter(labels).most_common())
+        local_hist = dict(Counter(masked_labels).most_common())
         if kernel_hist != local_hist:
-            print("MISMATCH: label histogram differs from kernel decode")
+            print("MISMATCH: masked label histogram differs from kernel decode")
             return 1
-        print("[check] label histogram matches kernel decode exactly")
+        print("[check] masked label histogram matches kernel decode exactly")
+
+    if args.allow_no_relation:
+        changed = Counter(m for m, u in zip(masked_labels, labels) if m != u)
+        n_changed = sum(changed.values())
+        n_neg = labels.count(export["masked_label"])
+        print(f"[41-class] {n_neg} no_relation predictions ({n_neg / len(labels):.2%}); "
+              f"{n_changed} predictions differ from the masked decode "
+              f"(all changes are to no_relation: {n_changed == n_neg})")
+        print("  replaced labels: " + ", ".join(f"{l} {c}" for l, c in changed.most_common(12)))
 
     print(f"\nREADY: {out_zip}")
     print(f"  penalty {penalty}, {len(labels)} labels, "

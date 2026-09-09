@@ -1,9 +1,9 @@
 # System-description paper (ACL LaTeX)
 
 `main.tex` is the master document for the Team Wasl paper (renamed from
-Rabt on 2026-08-05 at the organizers' request). It is kept in sync with
-Salah's working repo; edit here (branch or main, either is fine) and we
-will reconcile.
+Rabt on 2026-08-05 at the organizers' request), synced from Salah's
+working repo at the camera-ready (accepted 2026-09-06, camera-ready
+submitted 2026-09-09).
 
 ## Build
 
@@ -19,8 +19,8 @@ use `latexmk -xelatex main.tex` after `tlmgr install amiri bidi`.
 
 ## Conventions
 
-- Document mode is `[preprint]` (authors shown, page numbers on). Switch
-  to `[final]` for submission: system papers are not anonymous, and the
+- Document mode is `[final]` (authors shown, no page numbers), the
+  required submission mode: system papers are not anonymous, and the
   guidelines list page numbers among the formatting deviations that can
   get a paper rejected unreviewed.
 - Guidelines (2026-08-05): at most 4 pages of main content excluding

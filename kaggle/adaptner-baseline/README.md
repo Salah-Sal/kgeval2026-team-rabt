@@ -24,7 +24,7 @@ sentinel lands with `"ok": true`.
 ```sh
 # after changing src/kgeval: re-stage + re-version the bundle first
 uv run python kaggle/adaptner-preflight/prepare_assets.py --clean
-uv run kaggle datasets version -p .data-cache/kaggle-staging/kgeval2026-bundle -m "<note>" -r zip -t
+uv run kaggle datasets version -p output/staging/kgeval2026-bundle -m "<note>" -r zip -t
 
 uv run kaggle kernels push -p kaggle/adaptner-baseline/kernel
 uv run kaggle kernels status salah1992/kgeval-2026-adaptner-baseline
