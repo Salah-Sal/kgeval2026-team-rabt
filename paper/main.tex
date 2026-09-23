@@ -9,11 +9,15 @@
 %       unreviewed); flipped from [preprint] 2026-08-16.
 \documentclass[11pt]{article}
 \usepackage[final]{acl}
-\usepackage{times}
+% Font fix 2026-09-22 (organizers' formatting email, same day): the body was
+% rendering in Latin Modern because fontspec (loaded below for the Arabic
+% examples) resets the defaults, silently overriding the former
+% \usepackage{times} and \usepackage{inconsolata}. The dead packages are
+% removed and the fonts are now set through fontspec itself, from the
+% chairs' allowed set (TeXGyreTermes / Inconsolatazi4). Math stays CM.
 \usepackage{latexsym}
 \usepackage[T1]{fontenc}
 \usepackage{microtype}
-\usepackage{inconsolata}
 \usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage{float}
@@ -21,7 +25,22 @@
 % Arabic examples (error analysis). We build with tectonic (XeTeX), so
 % fontspec+bidi is the supported path; bidi must be loaded after hyperref
 % (acl.sty loads hyperref), i.e. last. \arx{} typesets a short RTL run.
+% Main/mono fonts must be selected before \usepackage{bidi}.
 \usepackage{fontspec}
+\setmainfont{texgyretermes}[
+  Extension = .otf,
+  UprightFont = *-regular,
+  BoldFont = *-bold,
+  ItalicFont = *-italic,
+  BoldItalicFont = *-bolditalic,
+]
+\setmonofont{Inconsolatazi4}[
+  Extension = .otf,
+  UprightFont = *-Regular,
+  BoldFont = *-Bold,
+  ItalicFont = *-Regular,
+  BoldItalicFont = *-Bold,
+]
 \newfontfamily\arabicfont[Script=Arabic]{Amiri}
 \usepackage{bidi}
 \newcommand{\arx}[1]{\RL{{\arabicfont #1}}}
